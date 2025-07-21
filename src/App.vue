@@ -1,5 +1,5 @@
 <script setup>
-  import { ref, reactive } from 'vue'
+  import { ref, reactive, watch, onMounted } from 'vue'
   import { uid } from 'uid'
   import Header from './components/Header.vue';
   import Formulario from './components/Formulario.vue';
@@ -17,6 +17,22 @@
 
   })
 
+
+  watch(pacientes, () => {
+    guardarLocalStorage()
+  }, { deep: true })
+
+  onMounted(() => {
+    const pacientesLocalStorage = localStorage.getItem('pacientes')
+    if(pacientesLocalStorage){
+      pacientes.value = JSON.parse(pacientesLocalStorage)
+    }
+  })
+
+  const guardarLocalStorage = () => {
+    localStorage.setItem('pacientes', JSON.stringify(pacientes.value))
+  }
+  
   const guardarPaciente = () => {
     if(paciente.id){
       const { id } = paciente
@@ -39,6 +55,11 @@
       const pacienteEditar = pacientes.value.filter( paciente => paciente.id === id)[0]
       Object.assign(paciente,pacienteEditar)
       
+  }
+
+  const eliminarPaciente = (id) => {
+      const i = pacientes.value.findIndex(paciente => paciente.id === id)
+      pacientes.value.splice(i, 1)
   }
 </script>
 
@@ -70,6 +91,7 @@
               v-for="paciente in pacientes"
               :paciente="paciente"
               @actualizar-paciente="actualizarPaciente"
+              @eliminar-paciente="eliminarPaciente"
             />
         </div>
         <p v-else class="mt-20 text-2xl text-center">No hay pacientes</p>
